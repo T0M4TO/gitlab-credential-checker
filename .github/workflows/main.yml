@@ -1,0 +1,49 @@
+name: Invoke AppSync API with OIDC
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  invoke-appsync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # 1단계에서 수정한 IAM Role의 ARN을 여기에 입력합니다.
+          role-to-assume: arn:aws:iam::385423560848:role/github_action_bypass
+          aws-region: ap-northeast-2
+
+      - name: Install awscurl
+        run: |
+          # awscurl을 사용하기 위해 pip (Python 패키지 관리자)를 설치합니다.
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip3 install awscurl
+
+      - name: Invoke AppSync getUser Query
+        run: |
+          # 셸 스크립트에서 JSON을 쉽게 다루기 위해 변수로 정의합니다.
+          # getUser 쿼리를 JSON 형식으로 만듭니다.
+          JSON_PAYLOAD=$(cat <<EOF
+          {
+            "query": "query GetSingleUser(\$userId: ID!) { getUser(userId: \$userId) { userId username age registeredAt } }",
+            "variables": {
+              "userId": "user-001"
+            }
+          }
+          EOF
+          )
+
+          # awscurl을 사용하여 AppSync 엔드포인트에 POST 요청을 보냅니다.
+          awscurl -X POST \
+            -H "Content-Type: application/json" \
+            --service appsync \
+            -d "$JSON_PAYLOAD" \
+            https://qahftsw7yjg4himsmpeg6tpqta.appsync-api.ap-northeast-2.amazonaws.com/graphql
