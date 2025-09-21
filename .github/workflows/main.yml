@@ -46,4 +46,4 @@ jobs:
             -H "Content-Type: application/json" \
             --service appsync \
             -d "$JSON_PAYLOAD" \
-            https://qahftsw7yjg4himsmpeg6tpqta.appsync-api.ap-northeast-2.amazonaws.com/graphql
+            https://xawflnu7pbd7fikumpyo2h4cby.appsync-api.ap-northeast-2.amazonaws.com/graphql
